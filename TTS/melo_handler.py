@@ -1,6 +1,6 @@
 from melo.api import TTS
 import logging
-from baseHandler import BaseHandler
+from s2s.baseHandler import BaseHandler
 import librosa
 import numpy as np
 from rich.console import Console

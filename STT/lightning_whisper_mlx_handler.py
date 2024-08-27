@@ -1,6 +1,6 @@
 import logging
 from time import perf_counter
-from baseHandler import BaseHandler
+from s2s.baseHandler import BaseHandler
 from lightning_whisper_mlx import LightningWhisperMLX
 import numpy as np
 from rich.console import Console
