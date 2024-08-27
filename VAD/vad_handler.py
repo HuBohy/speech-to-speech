@@ -1,10 +1,10 @@
-from VAD.vad_iterator import VADIterator
-from baseHandler import BaseHandler
+from s2s.VAD.vad_iterator import VADIterator
+from s2s.baseHandler import BaseHandler
 import numpy as np
 import torch
 from rich.console import Console
 
-from utils.utils import int2float
+from s2s.utils.utils import int2float
 
 import logging
 

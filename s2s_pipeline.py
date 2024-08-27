@@ -7,18 +7,19 @@ from queue import Queue
 from threading import Event
 from typing import Optional
 from sys import platform
-from VAD.vad_handler import VADHandler
-from arguments_classes.language_model_arguments import LanguageModelHandlerArguments
-from arguments_classes.mlx_language_model_arguments import (
+
+from s2s.VAD.vad_handler import VADHandler
+from s2s.arguments_classes.language_model_arguments import LanguageModelHandlerArguments
+from s2s.arguments_classes.mlx_language_model_arguments import (
     MLXLanguageModelHandlerArguments,
 )
-from arguments_classes.module_arguments import ModuleArguments
-from arguments_classes.parler_tts_arguments import ParlerTTSHandlerArguments
-from arguments_classes.socket_receiver_arguments import SocketReceiverArguments
-from arguments_classes.socket_sender_arguments import SocketSenderArguments
-from arguments_classes.vad_arguments import VADHandlerArguments
-from arguments_classes.whisper_stt_arguments import WhisperSTTHandlerArguments
-from arguments_classes.melo_tts_arguments import MeloTTSHandlerArguments
+from s2s.arguments_classes.module_arguments import ModuleArguments
+from s2s.arguments_classes.parler_tts_arguments import ParlerTTSHandlerArguments
+from s2s.arguments_classes.socket_receiver_arguments import SocketReceiverArguments
+from s2s.arguments_classes.socket_sender_arguments import SocketSenderArguments
+from s2s.arguments_classes.vad_arguments import VADHandlerArguments
+from s2s.arguments_classes.whisper_stt_arguments import WhisperSTTHandlerArguments
+from s2s.arguments_classes.melo_tts_arguments import MeloTTSHandlerArguments
 import torch
 import nltk
 from rich.console import Console
@@ -26,7 +27,7 @@ from transformers import (
     HfArgumentParser,
 )
 
-from utils.thread_manager import ThreadManager
+from s2s.utils.thread_manager import ThreadManager
 
 # Ensure that the necessary NLTK resources are available
 try:
@@ -65,7 +66,7 @@ def prepare_args(args, prefix):
     args.__dict__["gen_kwargs"] = gen_kwargs
 
 
-def main():
+def pipeline():
     parser = HfArgumentParser(
         (
             ModuleArguments,
@@ -190,7 +191,7 @@ def main():
     lm_response_queue = Queue()
 
     if module_kwargs.mode == "local":
-        from connections.local_audio_streamer import LocalAudioStreamer
+        from s2s.connections.local_audio_streamer import LocalAudioStreamer
 
         local_audio_streamer = LocalAudioStreamer(
             input_queue=recv_audio_chunks_queue, output_queue=send_audio_chunks_queue
@@ -198,8 +199,8 @@ def main():
         comms_handlers = [local_audio_streamer]
         should_listen.set()
     else:
-        from connections.socket_receiver import SocketReceiver
-        from connections.socket_sender import SocketSender
+        from s2s.connections.socket_receiver import SocketReceiver
+        from s2s.connections.socket_sender import SocketSender
 
         comms_handlers = [
             SocketReceiver(
@@ -226,7 +227,7 @@ def main():
         setup_kwargs=vars(vad_handler_kwargs),
     )
     if module_kwargs.stt == "whisper":
-        from STT.whisper_stt_handler import WhisperSTTHandler
+        from s2s.STT.whisper_stt_handler import WhisperSTTHandler
 
         stt = WhisperSTTHandler(
             stop_event,
@@ -235,7 +236,7 @@ def main():
             setup_kwargs=vars(whisper_stt_handler_kwargs),
         )
     elif module_kwargs.stt == "whisper-mlx":
-        from STT.lightning_whisper_mlx_handler import LightningWhisperSTTHandler
+        from s2s.STT.lightning_whisper_mlx_handler import LightningWhisperSTTHandler
 
         stt = LightningWhisperSTTHandler(
             stop_event,
@@ -246,7 +247,7 @@ def main():
     else:
         raise ValueError("The STT should be either whisper or whisper-mlx")
     if module_kwargs.llm == "transformers":
-        from LLM.language_model import LanguageModelHandler
+        from s2s.LLM.language_model import LanguageModelHandler
 
         lm = LanguageModelHandler(
             stop_event,
@@ -255,7 +256,7 @@ def main():
             setup_kwargs=vars(language_model_handler_kwargs),
         )
     elif module_kwargs.llm == "mlx-lm":
-        from LLM.mlx_language_model import MLXLanguageModelHandler
+        from s2s.LLM.mlx_language_model import MLXLanguageModelHandler
 
         lm = MLXLanguageModelHandler(
             stop_event,
@@ -266,7 +267,7 @@ def main():
     else:
         raise ValueError("The LLM should be either transformers or mlx-lm")
     if module_kwargs.tts == "parler":
-        from TTS.parler_handler import ParlerTTSHandler
+        from s2s.TTS.parler_handler import ParlerTTSHandler
 
         tts = ParlerTTSHandler(
             stop_event,
@@ -278,7 +279,7 @@ def main():
 
     elif module_kwargs.tts == "melo":
         try:
-            from TTS.melo_handler import MeloTTSHandler
+            from s2s.TTS.melo_handler import MeloTTSHandler
         except RuntimeError as e:
             logger.error(
                 "Error importing MeloTTSHandler. You might need to run: python -m unidic download"
@@ -301,7 +302,3 @@ def main():
 
     except KeyboardInterrupt:
         pipeline_manager.stop()
-
-
-if __name__ == "__main__":
-    main()

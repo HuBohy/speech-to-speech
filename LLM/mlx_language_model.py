@@ -1,6 +1,6 @@
 import logging
-from LLM.chat import Chat
-from baseHandler import BaseHandler
+from s2s.LLM.chat import Chat
+from s2s.baseHandler import BaseHandler
 from mlx_lm import load, stream_generate, generate
 from rich.console import Console
 import torch

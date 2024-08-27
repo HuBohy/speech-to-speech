@@ -5,7 +5,7 @@ from transformers import (
 )
 import torch
 
-from baseHandler import BaseHandler
+from s2s.baseHandler import BaseHandler
 from rich.console import Console
 import logging
 
