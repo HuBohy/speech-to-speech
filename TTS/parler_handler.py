@@ -1,6 +1,6 @@
 from threading import Thread
 from time import perf_counter
-from baseHandler import BaseHandler
+from s2s.baseHandler import BaseHandler
 import numpy as np
 import torch
 from transformers import (

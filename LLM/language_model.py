@@ -7,8 +7,8 @@ from transformers import (
 )
 import torch
 
-from LLM.chat import Chat
-from baseHandler import BaseHandler
+from s2s.LLM.chat import Chat
+from s2s.baseHandler import BaseHandler
 from rich.console import Console
 import logging
 from nltk import sent_tokenize

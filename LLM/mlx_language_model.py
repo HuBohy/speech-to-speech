@@ -64,32 +64,32 @@ class MLXLanguageModelHandler(BaseHandler):
 
         self.chat.append({"role": self.user_role, "content": prompt})
         
-        # # Remove system messages if using a Gemma model
-        # if "gemma" in self.model_name.lower():
-        #     chat_messages = [msg for msg in self.chat.to_list() if msg["role"] != "system"]
-        # else:
-        #     chat_messages = self.chat.to_list()
+        # Remove system messages if using a Gemma model
+        if "gemma" in self.model_name.lower():
+            chat_messages = [msg for msg in self.chat.to_list() if msg["role"] != "system"]
+        else:
+            chat_messages = self.chat.to_list()
         
-        # prompt = self.tokenizer.apply_chat_template(
-        #     chat_messages, tokenize=False, add_generation_prompt=True
-        # )
-        # output = ""
-        # curr_output = ""
-        # for t in stream_generate(
-        #     self.model,
-        #     self.tokenizer,
-        #     prompt,
-        #     max_tokens=self.gen_kwargs["max_new_tokens"],
-        # ):
-        #     output += t
-        #     curr_output += t
-        #     if curr_output.endswith((".", "?", "!", "<|end|>")):
-        #         yield curr_output.replace("<|end|>", "")
-        #         curr_output = ""
-        # generated_text = output.replace("<|end|>", "")
-        # torch.mps.empty_cache()
+        prompt = self.tokenizer.apply_chat_template(
+            chat_messages, tokenize=False, add_generation_prompt=True
+        )
+        output = ""
+        curr_output = ""
+        for t in stream_generate(
+            self.model,
+            self.tokenizer,
+            prompt,
+            max_tokens=self.gen_kwargs["max_new_tokens"],
+        ):
+            output += t
+            curr_output += t
+            if curr_output.endswith((".", "?", "!", "<|end|>")):
+                yield curr_output.replace("<|end|>", "")
+                curr_output = ""
+        generated_text = output.replace("<|end|>", "")
+        torch.mps.empty_cache()
 
-        generated_text = "This is a test, I'm not a pineapple !" # Put whatever text you want to be read by the avatar 
-        yield generated_text
+        # generated_text = "This is a test, I'm not a pineapple !" # Put whatever text you want to be read by the avatar 
+        # yield generated_text
 
         self.chat.append({"role": "assistant", "content": generated_text})
